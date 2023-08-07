@@ -34,6 +34,29 @@ def match_trigger_id(content: str) -> Union[str, None]:
     return match[0] if match else None
 
 
+
+from loguru import logger
+import socket
+import json
+
+def my_callback(data):
+    try:
+        # create a client socket
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = data
+        # connect to the server socket in program B
+        client_socket.connect(("localhost", 1234))
+
+        # send the data to program B
+        # client_socket.sendall(str(result).encode())
+        client_socket.sendall(json.dumps(result).encode())
+
+        # close the socket
+        client_socket.close()
+    except Exception as e:
+        print(f"Error sending data: {e}")
+
+    
 async def callback_trigger(trigger_id: str, trigger_status: str, message: Message):
     await callback(CallbackData(
         type=trigger_status,
@@ -45,7 +68,7 @@ async def callback_trigger(trigger_id: str, trigger_status: str, message: Messag
         ],
         embeds=[],
         trigger_id=trigger_id,
-    ))
+    ),my_callback=my_callback)
 
 
 async def callback_describe(trigger_status: str, message: Message, embed: Dict[str, Any]):
